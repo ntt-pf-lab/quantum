@@ -160,6 +160,7 @@ class OVSQuantumAgent:
 
     def setup_integration_br(self, integ_br):
         self.int_br = OVSBridge(integ_br)
+        self.int_br.reset_bridge()
         self.int_br.remove_all_flows()
         # switch all traffic using L2 learning
         self.int_br.add_flow(priority=1, actions="normal")
