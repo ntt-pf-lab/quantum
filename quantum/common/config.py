@@ -21,6 +21,7 @@ Routines for configuring Quantum
 """
 
 import ConfigParser
+import inspect
 import logging
 import logging.config
 import logging.handlers
@@ -34,11 +35,35 @@ from paste import deploy
 from quantum.common import flags
 from quantum.common import exceptions as exception
 
-DEFAULT_LOG_FORMAT = "%(asctime)s %(levelname)8s [%(name)s] %(message)s"
+DEFAULT_LOG_FORMAT = "%(asctime)s %(server_name)s %(levelname)8s "\
+                     "[%(name)s] %(message)s"
 DEFAULT_LOG_DATE_FORMAT = "%Y-%m-%d %H:%M:%S"
 
 FLAGS = flags.FLAGS
+
+
+class QuantumLogger(logging.Logger):
+    """QuantumLogger sets server_name in each log message.
+    This becomes the class that is instantiated by logging.getLogger.
+    """
+    def __init__(self, name, level=logging.NOTSET):
+        logging.Logger.__init__(self, name, level)
+
+    def _log(self, level, msg, args, exc_info=None, extra=None):
+        """Add the application/server name to each log record."""
+        global _binary_name
+        if not extra:
+            extra = {}
+        extra['server_name'] = _binary_name
+        return logging.Logger._log(self, level, msg, args, exc_info, extra)
+
+
+logging.setLoggerClass(QuantumLogger)
 LOG = logging.getLogger('quantum.common.wsgi')
+
+
+def _get_binary_name():
+    return os.path.basename(inspect.stack()[-1][1])
 
 
 def parse_options(parser, cli_args=None):
@@ -127,7 +152,8 @@ def setup_logging(options, conf):
     :param options: Mapping of typed option key/values
     :param conf: Mapping of untyped key/values from config file
     """
-
+    global _binary_name
+    _binary_name = _get_binary_name()
     if options.get('log_config', None):
         # Use a logging configuration file for all settings...
         if os.path.exists(options['log_config']):
