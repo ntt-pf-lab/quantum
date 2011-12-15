@@ -26,8 +26,9 @@ from quantum.common import wsgi
 
 
 FLAGS = flags.FLAGS
-flags.DEFINE_integer('max_response_len', -1, 'maximum length of the API \
-response body to include in the log (-1 means log complete value)')
+flags.DEFINE_integer('max_response_len', -1,
+                     'maximum length of the API response body to include in '\
+                     'the log (-1 means log complete value)')
 
 
 class DebugLogger(wsgi.Middleware):
@@ -69,11 +70,9 @@ class DebugLogger(wsgi.Middleware):
 
         resp.set_cookie('request_id', request_id)
 
-        #maximum length of response value to log.
-        MAX_RESPONSE_LEN = FLAGS.max_response_len
         response_str = resp.body
-        if MAX_RESPONSE_LEN != -1:
-            response_str = response_str[0:MAX_RESPONSE_LEN]
+        if FLAGS.max_response_len != -1:
+            response_str = response_str[0:FLAGS.max_response_len]
 
         log_str = "REQUEST ID: %s TIME: %.3f %s RESPONSE STATUS: '%s' "\
                     "RESPONSE: '%s'" % \
