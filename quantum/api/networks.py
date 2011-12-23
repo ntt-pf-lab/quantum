@@ -80,6 +80,7 @@ class Controller(common.QuantumController):
             return self._item(request, tenant_id, id,
                               net_details=True, port_details=False)
         except exception.NetworkNotFound as e:
+            LOG.warn(_("Network %s could not be found") % id)
             return faults.Fault(faults.NetworkNotFound(e))
 
     def detail(self, request, **kwargs):
@@ -107,6 +108,7 @@ class Controller(common.QuantumController):
                                   request_params['name'])
         builder = networks_view.get_view_builder(request)
         result = builder.build(network)['network']
+        LOG.info(_("Created network %s.") % result['id'])
         # Wsgi middleware allows us to build the response
         # before returning the call.
         # This will allow us to return a 200 status code.  NOTE: in v1.1 we
@@ -124,16 +126,21 @@ class Controller(common.QuantumController):
         try:
             self._plugin.rename_network(tenant_id, id,
                                         request_params['name'])
+            LOG.info(_("Updated network %s.") % id)
             return exc.HTTPNoContent()
         except exception.NetworkNotFound as e:
+            LOG.warn(_("Network %s could not be found") % id)
             return faults.Fault(faults.NetworkNotFound(e))
 
     def delete(self, request, tenant_id, id):
         """ Destroys the network with the given id """
         try:
             self._plugin.delete_network(tenant_id, id)
+            LOG.info(_("Deleted network %s.") % id)
             return exc.HTTPNoContent()
         except exception.NetworkNotFound as e:
+            LOG.warn(_("Network %s could not be found") % id)
             return faults.Fault(faults.NetworkNotFound(e))
         except exception.NetworkInUse as e:
+            LOG.warn(_("Cannot delete network %s, currently in use") % id)
             return faults.Fault(faults.NetworkInUse(e))

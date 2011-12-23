@@ -51,8 +51,11 @@ class Controller(common.QuantumController):
             result = builder.build(att_data)['attachment']
             return dict(attachment=result)
         except exception.NetworkNotFound as e:
+            LOG.warn(_("Network %s could not be found") % network_id)
             return faults.Fault(faults.NetworkNotFound(e))
         except exception.PortNotFound as e:
+            LOG.warn(_("Port %s (of Network %s ) could not be found") %
+                     (id, network_id))
             return faults.Fault(faults.PortNotFound(e))
 
     def attach_resource(self, request, tenant_id, network_id, id):
@@ -66,22 +69,36 @@ class Controller(common.QuantumController):
             LOG.debug("PLUGGING INTERFACE:%s", request_params['id'])
             self._plugin.plug_interface(tenant_id, network_id, id,
                                         request_params['id'])
+            LOG.info(_("Attached resource to port %s of network %s") %
+                     (id, network_id))
             return exc.HTTPNoContent()
         except exception.NetworkNotFound as e:
+            LOG.warn(_("Network %s could not be found") % network_id)
             return faults.Fault(faults.NetworkNotFound(e))
         except exception.PortNotFound as e:
+            LOG.warn(_("Port %s (of network %s) could not be found") %
+                     (id, network_id))
             return faults.Fault(faults.PortNotFound(e))
         except exception.PortInUse as e:
+            LOG.warn(_("Port %s (of network %s) is in use") %
+                     (id, network_id))
             return faults.Fault(faults.PortInUse(e))
         except exception.AlreadyAttached as e:
+            LOG.warn(_("Port %s (of network %s) is already attached") %
+                     (id, network_id))
             return faults.Fault(faults.AlreadyAttached(e))
 
     def detach_resource(self, request, tenant_id, network_id, id):
         try:
             self._plugin.unplug_interface(tenant_id,
                                           network_id, id)
+            LOG.info(_("Detached resource from port %s (of network %s)") %
+                     (id, network_id))
             return exc.HTTPNoContent()
         except exception.NetworkNotFound as e:
+            LOG.warn(_("Network %s could not be found") % network_id)
             return faults.Fault(faults.NetworkNotFound(e))
         except exception.PortNotFound as e:
+            LOG.warn(_("Port %s (of network %s) could not be found") %
+                       (id, network_id))
             return faults.Fault(faults.PortNotFound(e))

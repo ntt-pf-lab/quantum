@@ -85,8 +85,11 @@ class Controller(common.QuantumController):
         try:
             return self._item(request, tenant_id, network_id, id)
         except exception.NetworkNotFound as e:
+            LOG.warn(_("Network %s could not be found") % network_id)
             return faults.Fault(faults.NetworkNotFound(e))
         except exception.PortNotFound as e:
+            LOG.warn(_("Port %s (of Network %s ) could not be found") %
+                     (id, network_id))
             return faults.Fault(faults.PortNotFound(e))
 
     def detail(self, request, **kwargs):
@@ -116,14 +119,18 @@ class Controller(common.QuantumController):
                                             request_params['state'])
             builder = ports_view.get_view_builder(request)
             result = builder.build(port)['port']
+            LOG.info(_("Created port %s for network %s") %
+                     (result['id'], network_id))
             # Wsgi middleware allows us to build the response
             # before returning the call.
             # This will allow us to return a 200 status code.  NOTE: in v1.1
             # we will be returning a 202 status code.
             return self._build_response(request, dict(port=result), 200)
         except exception.NetworkNotFound as e:
+            LOG.warn(_("Network %s could not be found") % network_id)
             return faults.Fault(faults.NetworkNotFound(e))
         except exception.StateInvalid as e:
+            LOG.warn(_("Invalid state %s specified") % request_params['state'])
             return faults.Fault(faults.RequestedStateInvalid(e))
 
     def update(self, request, tenant_id, network_id, id):
@@ -137,12 +144,18 @@ class Controller(common.QuantumController):
         try:
             self._plugin.update_port(tenant_id, network_id, id,
                                      request_params['state'])
+            LOG.info(_("Updated port %s (of network %s).") %
+                     (id, network_id))
             return exc.HTTPNoContent()
         except exception.NetworkNotFound as e:
+            LOG.warn(_("Network %s could not be found") % network_id)
             return faults.Fault(faults.NetworkNotFound(e))
         except exception.PortNotFound as e:
+            LOG.warn(_("Port %s (of Network %s ) could not be found") %
+                     (id, network_id))
             return faults.Fault(faults.PortNotFound(e))
         except exception.StateInvalid as e:
+            LOG.warn(_("Invalid state %s specified") % request_params['state'])
             return faults.Fault(faults.RequestedStateInvalid(e))
 
     def delete(self, request, tenant_id, network_id, id):
@@ -150,10 +163,17 @@ class Controller(common.QuantumController):
         #look for port state in request
         try:
             self._plugin.delete_port(tenant_id, network_id, id)
+            LOG.info(_("Deleted port %s (of network %s).") %
+                     (id, network_id))
             return exc.HTTPNoContent()
         except exception.NetworkNotFound as e:
+            LOG.warn(_("Network %s could not be found") % network_id)
             return faults.Fault(faults.NetworkNotFound(e))
         except exception.PortNotFound as e:
+            LOG.warn(_("Port %s (of Network %s ) could not be found") %
+                     (id, network_id))
             return faults.Fault(faults.PortNotFound(e))
         except exception.PortInUse as e:
+            LOG.warn(_("Port %s (of Network %s ) is in use") %
+                     (id, network_id))
             return faults.Fault(faults.PortInUse(e))

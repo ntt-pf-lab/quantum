@@ -75,7 +75,7 @@ class Server(object):
         """Start a WSGI server in a new green thread."""
         logger = logging.getLogger('eventlet.wsgi.server')
         eventlet.wsgi.server(socket, application, custom_pool=self.pool,
-                             log=WritableLogger(logger))
+                             log=WritableLogger(logger, level=logging.INFO))
 
 
 class Middleware(object):

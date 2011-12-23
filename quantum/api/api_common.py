@@ -77,7 +77,8 @@ class QuantumController(wsgi.Controller):
         response.status = status_code
         response.headers['Content-Type'] = content_type
         response.body = body
-        msg_dict = dict(url=req.url, status=response.status_int)
-        msg = _("%(url)s returned with HTTP %(status)d") % msg_dict
+        msg_dict = dict(method=req.method, url=req.url,
+                        status=response.status_int)
+        msg = _("%(method)s %(url)s returned with HTTP %(status)d") % msg_dict
         LOG.debug(msg)
         return response
