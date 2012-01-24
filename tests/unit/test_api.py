@@ -155,6 +155,17 @@ class APITest(unittest.TestCase):
                          network_data['network'])
         LOG.debug("_test_show_network_detail - format:%s - END", format)
 
+    def _test_show_network_detail_network_not_found(self, format):
+        LOG.debug("_test_show_network_detail - format:%s - START", format)
+        content_type = "application/%s" % format
+        # Create a network and a port
+        network_id = "invalid"
+        show_network_req = testlib.show_network_detail_request(
+                                    self.tenant_id, network_id, format)
+        show_network_res = show_network_req.get_response(self.api)
+        self.assertEqual(show_network_res.status_int, 420)
+        LOG.debug("_test_show_network_detail - format:%s - END", format)
+
     def _test_show_network_not_found(self, format):
         LOG.debug("_test_show_network_not_found - format:%s - START", format)
         show_network_req = testlib.show_network_request(self.tenant_id,
@@ -864,6 +875,12 @@ class APITest(unittest.TestCase):
 
     def test_show_network_detail_xml(self):
         self._test_show_network_detail('xml')
+
+    def test_show_network_detail_network_not_found_json_negative(self):
+        self._test_show_network_detail_network_not_found('json')
+
+    def test_show_network_detail_network_not_found_xml_negative(self):
+        self._test_show_network_detail_network_not_found('xml')
 
     def test_delete_network_json(self):
         self._test_delete_network('json')

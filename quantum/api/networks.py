@@ -88,8 +88,12 @@ class Controller(common.QuantumController):
         network_id = kwargs.get('id')
         if network_id:
             # show details for a given network
-            return self._item(request, tenant_id, network_id,
+            try:
+                return self._item(request, tenant_id, network_id,
                               net_details=True, port_details=True)
+            except exception.NetworkNotFound as e:
+                LOG.warn(_("Network %s could not be found") % id)
+                return faults.Fault(faults.NetworkNotFound(e))
         else:
             # show details for all networks
             return self._items(request, tenant_id, net_details=True)
