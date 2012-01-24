@@ -156,7 +156,8 @@ class APITest(unittest.TestCase):
         LOG.debug("_test_show_network_detail - format:%s - END", format)
 
     def _test_show_network_detail_network_not_found(self, format):
-        LOG.debug("_test_show_network_detail - format:%s - START", format)
+        LOG.debug(_("_test_show_network_detail_network_not_found - format:%s "\
+                    "- START"), format)
         content_type = "application/%s" % format
         # Create a network and a port
         network_id = "invalid"
@@ -164,7 +165,8 @@ class APITest(unittest.TestCase):
                                     self.tenant_id, network_id, format)
         show_network_res = show_network_req.get_response(self.api)
         self.assertEqual(show_network_res.status_int, 420)
-        LOG.debug("_test_show_network_detail - format:%s - END", format)
+        LOG.debug(_("_test_show_network_detail_network_not_found - format:%s "\
+                    "- END"), format)
 
     def _test_show_network_not_found(self, format):
         LOG.debug("_test_show_network_not_found - format:%s - START", format)
