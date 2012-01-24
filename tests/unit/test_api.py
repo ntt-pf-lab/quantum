@@ -456,6 +456,17 @@ class APITest(unittest.TestCase):
                           custom_req_body=bad_body, expected_res_status=400)
         LOG.debug("_test_create_port_badrequest - format:%s - END", format)
 
+    def _test_create_port_invalidstate(self, format):
+        LOG.debug(_("_test_create_port_invalidstate - format:%s - START"),
+                    format)
+        bad_body = {"port": {"state": "TEST"}}
+        network_id = self._create_network(format)
+        port_state = bad_body['port']['state']
+        self._create_port(network_id, port_state, format,
+                          custom_req_body=bad_body, expected_res_status=431)
+        LOG.debug(_("_test_create_port_invalidstate - format:%s - END"),
+                    format)
+
     def _test_delete_port(self, format):
         LOG.debug("_test_delete_port - format:%s - START", format)
         content_type = "application/%s" % format
@@ -966,6 +977,12 @@ class APITest(unittest.TestCase):
 
     def test_create_port_badrequest_xml(self):
         self._test_create_port_badrequest('xml')
+
+    def test_create_port_invalidstate_json(self):
+        self._test_create_port_invalidstate('json')
+
+    def test_create_port_invalidstate_xml(self):
+        self._test_create_port_invalidstate('xml')
 
     def test_delete_port_xml(self):
         self._test_delete_port('xml')

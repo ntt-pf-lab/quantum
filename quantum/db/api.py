@@ -30,6 +30,7 @@ _ENGINE = None
 _MAKER = None
 BASE = models.BASE
 LOG = logging.getLogger('quantum.db.api')
+PORT_STATES = ('ACTIVE', 'DOWN')
 
 
 def configure_db(options):
@@ -159,6 +160,8 @@ def network_destroy(net_id):
 def port_create(net_id, state=None):
     # confirm network exists
     network_get(net_id)
+    if state and state not in PORT_STATES:
+        raise q_exc.StateInvalid(port_state=state)
 
     session = get_session()
     with session.begin():
@@ -192,7 +195,7 @@ def port_get(port_id, net_id):
 
 
 def port_set_state(port_id, net_id, new_state):
-    if new_state not in ('ACTIVE', 'DOWN'):
+    if new_state not in PORT_STATES:
         raise q_exc.StateInvalid(port_state=new_state)
 
     # confirm network exists
